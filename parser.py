@@ -111,6 +111,73 @@ class Parser:
             left = Xor(left, right)
 
         return left
+    
+    
+    # CONJUNÇÃO
+    
+    def parse_and(self):
+
+        left = self.parse_not()
+
+        while (
+            self.current()
+            and self.current().type == 'AND'
+        ):
+
+            self.eat('AND')
+
+            right = self.parse_not()
+
+            left = And(left, right)
+
+        return left
+
+    
+    # NEGAÇÃO
+    
+    def parse_not(self):
+
+        token = self.current()
+
+        if (
+            token
+            and token.type == 'NOT'
+        ):
+
+            self.eat('NOT')
+
+            return Not(
+                self.parse_not()
+            )
+
+        return self.parse_atom()
+
+    
+    # ÁTOMOS
+
+    def parse_atom(self):
+
+        token = self.current()
+
+        if token.type == 'ATOM':
+
+            self.eat('ATOM')
+
+            return Atom(token.value)
+
+        if token.type == 'LPAREN':
+
+            self.eat('LPAREN')
+
+            expr = self.parse_iff()
+
+            self.eat('RPAREN')
+
+            return expr
+
+        raise SyntaxError(
+            "Fórmula inválida"
+        )
 
 def parse_formula(text):
 
